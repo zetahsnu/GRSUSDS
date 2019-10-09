@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<%String u=((String)session.getAttribute( "s_userid")!=null&&!((String)session.getAttribute( "s_userid")).equals("null")?(String)session.getAttribute( "s_userid"):(request.getParameter("u")!=null&&request.getParameter("u")!=""?"vb"+request.getParameter("u"):"0"));%>
+	<html>
+	<head>
+	<title>GRSU SDS</title>
+	 <meta charset='utf-8'>
+	<link href="style/styles.css" rel="stylesheet" type="text/css" />
+	<script language="javascript" src="./js/jquery-1.8.3.min.js"></script> 
+	    <script src="jquery.csv.min.js"></script>
+
+<!-- Add fancyBox main JS and CSS files -->
+<script type="text/javascript" src="./js/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+<link rel="stylesheet" href="./js/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+
+
+<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+<script type="text/javascript" src="js/jquery.tablesorter.widgets.min.js"></script>
+<link rel="stylesheet" type="text/css" href="omstable.theme.blue.css" />
+
+  <script language="javascript" src="./js/notify.min.js"></script>
+  <script>
+  var GSEL="";
+$(document).ready(function () {
+	
+			if($("#sesu").val()=="0"){ $("#mmkm").hide();$("#mmkm2").hide();$("#mmkm3").hide(); alert("You cannot access this page unless you are logged in.");return}
+
+	    $("#spinner").bind("ajaxSend", function() {
+        $(this).show();
+    }).bind("ajaxStop", function() {
+        $(this).hide();
+    }).bind("ajaxError", function() {
+        $(this).hide();
+    });
+		$("#inline").fancybox();
+
+	<%if(request.getParameter("t")!=null&&request.getParameter("t")!="") {out.print("$('#bc01').val('ga');getblocked('ga');");}else out.print("getblocked('');"); %>
+});	
+
+function getblocked(t) {
+	//alert(t); return
+	GSEL=t;
+	var  un={"t":t}
+	$.ajax({
+		type: "POST",
+		data: un,
+		url:"blockeddata.jsp" 	,
+		success:function(result){
+			if($.trim(result)=="") {$("#d").html("Noseed requests for you to manage. Begin by clicking <i>Process new seed request</i> above.");return;}
+			$("#d").html(result);
+			$(function(){
+			  $("#rtab").tablesorter({theme:'blue'	, widthFixed: true, widgets: ['zebra','stickyHeaders','filter'], widgetOptions:{stickyHeaders : 'tablesorter-stickyHeader'}}); $("#rtab").show(); $("#wgxls").show(); $("#dm").show();
+			});	
+			$("#divde").html("");
+			if($.trim($("#m").val()).length>1){for(var i=0;i<$.trim($("#m").val()).substr(1).split(",").length;i++){$("#divde").html($("#divde").html() + $.trim($("#m").val()).substr(1).split(",")[i]+" <a href='javascript:;' onclick='deg(\""+$.trim($("#m").val()).substr(1).split(",")[i]+"\")'>Delete</a> | " )}}
+  		}
+	});
+	}
+	
+var GX=0;
+function ed(x,y)
+{
+	GX=x;
+	$("#cont").val($("#ocn"+x).text());
+	$("#crop").val($("#ocr"+x).text());
+	$("#vari").val($("#ocv"+x).text());
+	$("#undt").val($("#ocu"+x).text());
+	$("#divfu").show();
+}
+
+function fa()
+{
+	if ($.trim(document.f2.cont.value) == "") {alert('Contract is required.');document.f2.cont.focus();return false;}
+	if ($.trim(document.f2.crop.value) == "") {alert('Crop is required.');document.f2.crop.focus();return false;}
+	if ($.trim(document.f2.vari.value) == "") {alert('Variety is required.');document.f2.vari.focus();return false;}
+	if ($.trim(document.f2.undt.value) == "") {alert('Validity is required.');document.f2.undt.focus();return false;}
+	$("#t").val(GSEL);
+	$("#q").val(GX); document.f2.submit();
+}
+
+function de(x)
+{	$("#t").val(GSEL);
+	$("#q").val(x); $("#actdt2").val(x); document.f2.submit();
+}
+
+			function deg(x) 
+			{
+				document.f3.action.value=2; 
+				document.f3.t.value=GSEL; 
+				document.f3.u.value= x; 
+				document.f3.submit();
+			}
+$(function () {
+			//***Global variable declaration
+			var vr_data = null;
+			
+			//***Upload button Click
+            $("#upload").bind("click", function () {
+                var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
+                if (regex.test($("#fileUpload").val().toLowerCase())) {
+                    if (typeof (FileReader) != "undefined") {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            var table = $("<table border />");
+							var csv = event.target.result;
+							//***Convert CSV tot JSON
+							vr_data = $.csv.toArrays(csv);
+							//***Build Table 
+							var html = '';
+							for(var row in vr_data) {
+							  html += '<tr>\r\n';
+							  if(vr_data[row].length!=4){alert("The number of columns in the CSV file must be 4."); return;}
+							  
+							  for(var item in vr_data[row]) {
+								if(vr_data[row][item]==""){alert("There cannot be empty cells in the CSV file."); return;}
+								html += '<td>' + vr_data[row][item] + '</td>\r\n';
+							  }
+							  html += '</tr>\r\n';
+							}
+							//***Bind Table to HTML
+                            $("#tbl_contents").html('');
+                            $('#tbl_contents').html(html);						$( "#submit" ).trigger( "click" );
+
+                        }
+                        reader.readAsText($("#fileUpload")[0].files[0]);
+
+                    } else {
+                        alert("This browser does not support HTML5.");
+                    }
+                } else {
+                    alert("Please upload a valid CSV file.");
+                }
+            });
+			
+			//***Submit button Click
+			$("#submit").bind("click", function () {
+			
+				//***vr_slicedata variable used for store the sliced data
+				var vr_slicedata = null;
+				if (document.getElementById("chk_checkbook").checked == true){
+					vr_slicedata = vr_data.slice(0,vr_data.length);
+				  } else {
+					vr_slicedata = vr_data.slice(1,vr_data.length);
+				  }
+				  //**** Final CSV data store to "div_finalcsv" div
+				 $("#div_finalcsv").html('');
+				 $('#div_finalcsv').html(convertToCSV(vr_slicedata));
+				 
+				document.f3.action.value=1; 
+				document.f3.t.value=GSEL; 
+				document.f3.u.value= $('#div_finalcsv').html(); 
+				document.f3.submit();
+			});
+			
+			function convertToCSV(objArray) {
+				var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+				var str = '';
+				for (var i = 0; i < array.length; i++) {
+					var line = '';
+					for (var index in array[i]) {
+						//if (line != '') line += ','
+						if(array[i][index].indexOf(",") > 0)
+						line +=  "\"" + array[i][index] + "\"";
+						else
+						line += array[i][index];
+						if(array[i].length > parseInt(index)+1) line = line+'#c#'; 
+					}
+					str += line + '#r#';
+				}
+				return str;
+			}
+			
+        });
+</script>
+<body>
+<%@ include file="header.jsp" %><br>
+	<input type="hidden" id="sesu" name="sesu" value="<%=u%>">
+
+<div id="spinner" class="spinner" style="display:none;">
+    <img id="img-spinner" src="spinner.gif" alt="Loading"/>
+</div>
+<div style="width:70%;margin: 0 auto; padding: 5px; border: .5px solid #cdcdcd;background-color: #bdf0c3;" id='mmkm'>
+<b>Currently working with:</b><br>
+	<label><input type="radio" name="bc" id="bc" value="b" onclick="getblocked(this.value)" checked  />Breeding lines</label>  <label><input type="radio" name="bc" id="bc" value="ga" onclick="getblocked(this.value)"  <%=(request.getParameter("t")!=null&&request.getParameter("t")!=""?"checked":"") %> />Germplasm accessions</label>
+<div id="divde" style="width:99%; padding: 5px; border: .5px solid #000;background-color: #fff;">a
+</div>
+</div><br>
+<div style="width:70%;margin: 0 auto; padding: 5px; border: .5px solid #dda819;background-color: lightyellow;" id='mmkm2'>
+ <b>Batch upload CSV file</b><br>
+<li>Ensure that one of either breeding lines or germplasm accessions is selected above
+ `<li>Ensure that the CSV file you want to upload has exactly four columns
+<li>The four columns need to be in the following order: variety, crop name, name of consortium and validity period
+<li>You can include multiple consortia in a single CSV file
+<br>
+   <input type="file" id="fileUpload" /> 
+    <input type="button" id="upload" value="Upload" /><span style="width:100%; display:none" >
+	<input type="checkbox" id="chk_checkbook"> Is CSV Having Header
+	<input type="button" id="submit" value="Submit" /></span>
+    <br />
+   <table id="tbl_contents" style="width:100%; height:400px; display:none" >
+  </table>
+   <div id="div_finalcsv"  style="width:100%; height:400px; display:none">
+	</div>
+	</div>
+<form id="f" name="f" method='post' action='orderform.jsp'>
+<table width="70%" align="center" border="0"><tr> <td width="100%">
+	<table id="activitydispla" width="100%"> <tr><td><input type="button" onclick="ed(0,'')" class='btnCloseSpecial' id='mmkm3' value="+ Include variety to be blocked"></td>	
+		</tr>		
+		<tr id="projectnamePaneltr">
+			<td id="projectnamePanel" width="50%" >
+				
+			</td>	
+	<td id="projectnamePanel" width="50%" align="right" >
+				
+			</td>	
+	</table>
+</td></tr></table>
+<div style="width:70%;margin: 0 auto;" id="d"></div>
+</form>
+<div id="ca"></div>
+<div id="divfu" style="position: fixed; display:none;
+        width: 30%; 
+        z-index: 2; 
+        top: 50%;
+        left: 50%;
+        margin-top: -10%; 
+        margin-left: -10%;
+        padding: 1px;
+        border: .5px solid #555555;
+        background-color: lightyellow;
+        border-radius: 5px;
+        text-align: center;">
+<form action="blockedsave.jsp" method="post" id="f2" name="f2">
+    		<table align="center" id="activitydisplay">
+			<tr><td>Contract</td><td><input type="text" name="cont" id="cont" maxlength="50"></td></tr>
+			<tr><td>Crop</td><td><input type="text" name="crop" id="crop" maxlength="50"></td></tr>
+			<tr><td>Variety</td><td><input type="text" name="vari" id="vari" maxlength="50"></td></tr>
+			<tr><td>Blocked till</td><td><input type="text	" name="undt" id="undt" maxlength="10"></td></tr>
+			<tr><td colspan="2"><input id="afufilebtn" type="button" value="Save" onclick="fa()"><div class="alignright"><input type="button" value="Close" onclick="$('#divfu').hide()" ></div></td></tr></table>	<input type="hidden" id="q" name="q" value=""><input type="hidden" id="t" name="t" value=""><input value="" type="hidden" name="actdt2" id="actdt2">
+</form></div>
+<form action="blockedsavebatch.jsp" method="post" id="f3" name="f3">
+    		<input type="hidden" id="u" name="u" value=""><input type="hidden" id="t" name="t" value=""><input value="" type="hidden" name="action" id="action">
+</form>
+</body>
+</html>

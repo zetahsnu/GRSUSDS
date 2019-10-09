@@ -1,0 +1,41 @@
+<%@ page import="java.sql.*, java.lang.*" %> 
+<%@ page trimDirectiveWhitespaces="true" %>
+<%
+String u=(request.getParameter("u")!=null&&request.getParameter("u")!=""?request.getParameter("u"):"0"); //userid
+
+String connectionURL = "jdbc:mysql://127.0.0.1:3306/grsusds?user=root;password=a6v6g1r6isyyc";
+
+Connection connection = null;
+Statement statement = null;
+ResultSet rs = null;
+StringBuffer sb = new StringBuffer("");
+int x=0; String a="0";
+Class.forName("com.mysql.jdbc.Driver");
+
+try
+{
+	connection = DriverManager.getConnection(connectionURL, "root", "a6v6g1r6isyyc");
+	statement = connection.createStatement();
+	rs = statement.executeQuery("SELECT isadmin FROM grsusds.users where isenabled=1 and userid="+u); if(rs.next()) a=rs.getString("isadmin");rs.close();
+	rs = statement.executeQuery("SELECT * FROM grsusds.users where isenabled=1 and userid>1");
+		
+	while(rs.next()){if(x==0) sb.append("<table id='rtab' class='tablesorter' style='display:non'><thead><tr><th>Firat name</th><th>Last name</th><th>Email</th><th>Username</th>"+(a.equals("1")?"<th>Action</th>":"")+"</tr></thead><tbody>"); x++; sb.append("<tr><td id='cfn" + rs.getString("userid") + "'>" + rs.getString("firstname") + "</td><td id='cln" + rs.getString("userid") + "'>" + rs.getString("lastname") + "</td><td id='oem" + rs.getString("userid") + "'>" + rs.getString("email") + "</td><td id='oun" + rs.getString("userid") + "'>" + rs.getString("username") + "</td>"+(a.equals("1")?"<td id='ocu" + "><div class='alignright'><a id='ocn" + rs.getString("userid") + "' href='javascript:;' onclick='ed(" + rs.getString("userid") + "," + rs.getString("isadmin") + ")'>Edit</a> | <a href='javascript:;' onclick='de(" + rs.getString("userid") + ")'>Delete</a> | <a href='javascript:;' onclick='pp(" + rs.getString("userid") + ")'>Send login info</a></div><span style='display:none' id='opw" + rs.getString("userid") + "'>" + rs.getString("password") + "</span></td>":"")+"</tr>"); } 
+	if(x==0){sb.append("");} else {sb.append("</tbody></table>");}
+	
+}
+
+catch (Exception e)
+{ 
+   sb.append("An error has occurred:" + e.getMessage());
+}
+finally
+{
+	rs.close();
+	statement.close();
+	connection.close();
+	connection=null; statement=null; rs=null;
+	
+}
+//response.setContentType("application/html; charset=UTF-8");
+out.println(sb);
+%>

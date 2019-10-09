@@ -1,0 +1,92 @@
+<%@ page import="java.sql.*,  java.io.*,java.util.*, javax.servlet.*" %>
+<%@ page import="javax.servlet.http.*" %>
+<%@ page import="org.apache.commons.fileupload.*" %>
+<%@ page import="org.apache.commons.fileupload.disk.*" %>
+<%@ page import="org.apache.commons.fileupload.servlet.*" %>
+<%@ page import="org.apache.commons.io.output.*" %>  
+
+<%@ page import="javax.mail.* "%>
+<%@ page import="javax.mail.internet.*,javax.activation.*"%>
+
+<%
+String connectionURL = "jdbc:mysql://127.0.0.1:3306/grsusds?user=root;password=a6v6g1r6isyyc";
+
+	Connection connection = null;
+	Statement statement = null;
+	ResultSet rs = null;
+	connection = DriverManager.getConnection(connectionURL, "root", "a6v6g1r6isyyc");
+//	Statement statement= null;
+		statement = connection.createStatement();
+ 	Class.forName("com.mysql.jdbc.Driver");
+
+   int hasFiles = 1;
+   String action = (request.getParameter("action")!=null&&request.getParameter("action")!=""?request.getParameter("action"):"0"); 
+
+try{      
+   		//send mail	
+   		
+   	
+	String host = "smtp.gmail.com";
+String from = "seedrequest@worldveg.org";
+    String user = "seedrequest@worldveg.org";
+    String pass = "Latifolia2017";
+    Properties props = System.getProperties();
+    props.put("mail.smtp.starttls.enable", "true"); // added this line
+    props.put("mail.smtp.host", host);
+    props.put("mail.smtp.user", user);
+    props.put("mail.smtp.password", pass);
+    props.put("mail.smtp.port", "587");
+    props.put("mail.smtp.auth", "true");
+
+    Session session1 = Session.getDefaultInstance(props, null);
+      
+
+
+	rs = statement.executeQuery("SELECT * FROM grsusds.users where userid="+action);
+	 while(rs.next()) {
+		//session.setAttribute( "s_email",  rs.getString("email"));
+		MimeMessage message = new MimeMessage(session1);
+    message.setFrom(new InternetAddress(from));
+
+		String[] to = {rs.getString("email")};// {"bharath.krishnan@worldveg.org"}; // added this line
+		InternetAddress[] toAddress = new InternetAddress[to.length];
+		
+		// To get the array of addresses
+		for( int zi=0; zi < to.length; zi++ ) { // changed from a while loop
+		    toAddress[zi] = new InternetAddress(to[zi]);
+		}
+		  //  out.println(Message.RecipientType.TO);
+		
+		for( int zi=0; zi < toAddress.length; zi++) { // changed from a while loop
+		    message.addRecipient(Message.RecipientType.TO, toAddress[zi]);
+		}
+	 			
+		message.setSubject("Seed Distribution System login details"); 
+    	message.setText("Dear " + rs.getString("firstname") + ":\n\n" +
+			"Your username and passcode for accessing the seed distribution system are below:\n\n" +
+	 		"Username: " + rs.getString("username") + "\n\n" + "Password: " + rs.getString("password") +
+	 		"\n\nThank you!" + "\n\nTeam GRSU" );	
+	
+	    Transport transport = session1.getTransport("smtp");
+	    transport.connect(host, user, pass);
+	    transport.sendMessage(message, message.getAllRecipients());
+	    transport.close();  transport = null; message = null;
+	 	// end of send mail
+ 	
+	}     	   		
+   	//response.sendRedirect("home.jsp?pr="+p);
+   }
+   catch (Exception e)
+{ 
+	
+  out.print( "An error has occured:" + e.getMessage());
+}
+finally
+{
+	if(rs!=null) rs.close();
+	//statement.close();
+	connection.close();
+	connection=null; statement=null; rs=null;
+	
+}
+%> 

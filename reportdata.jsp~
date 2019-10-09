@@ -1,0 +1,90 @@
+<%@ page import="java.sql.*, java.lang.*" %> 
+<%@ page trimDirectiveWhitespaces="true" %>
+<%
+String u=(request.getParameter("u")!=null&&request.getParameter("u")!=""?request.getParameter("u"):"0"); //reportid
+String yr=(request.getParameter("yr")!=null&&request.getParameter("yr")!=""?request.getParameter("yr"):""); //userid
+String cs=(request.getParameter("i")!=null&&request.getParameter("i")!=""?request.getParameter("i"):""); //userid
+String fl=(request.getParameter("f")!=null&&request.getParameter("f")!=""?request.getParameter("f")					:""); //userid
+String rd=(request.getParameter("r")!=null&&request.getParameter("r")!=""?request.getParameter("r"):""); //userid
+
+String connectionURL = "jdbc:mysql://127.0.0.1:3306/grsusds?user=root;password=root";
+
+Connection connection = null;
+Statement statement = null;
+ResultSet rs = null;
+StringBuffer sb = new StringBuffer("");
+int x=0;
+Class.forName("com.mysql.jdbc.Driver");
+
+//u="3";
+try
+{
+	connection = DriverManager.getConnection(connectionURL, "root", "root");
+	statement = connection.createStatement();
+	if(u.equals("0")) {rs = statement.executeQuery("select a.*, b.genus, b.species, b.subtaxa, b.crop, c.orderno, c.firstname, c.email, c.org, c.orgnature,c.createddate apdt,c.shipnum, c.cropshipnum, c.job,c.dept, c.purpose,c.username from grsusds.ordsummary a, seedcatalogpre b, orders c where substring(a.variety,1,4)=b.code and a.orderid=c.orderid and a.type='BL' and year(a.createddate) = '"+yr+"' order by a.type,a.tocountry,a.createddate");
+	while(rs.next()){if(x==0) sb.append("<table id='rtab'  style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th>Sent From</th><th>Order No</th><th>Ship No.</th><th>Crop Ship No.</th><th>Recipient Name</th><th>Title</th><th>Department</th><th>Email</th><th>Organization</th><th>Org Nature</th><th>Sender</th><th>Purpoae</th><th>Apply Date</th><th>Variety</th><th>Genus</th><th>Species</th><th>Subtaxa</th><th>Crop</th><th>Date</th></tr></thead><tbody>"); x++; sb.append("<tr><td>" + rs.getString("tocountry") + "</td><td>" + rs.getString("fromcountry")+ "</td><td>" + rs.getString("orderno") + "</td><td>" + rs.getString("shipnum") + "</td><td>" + rs.getString("cropshipnum") + "</td><td>" + rs.getString("firstname") + "</td><td>" + rs.getString("job") + "</td><td>" + rs.getString("dept") + "</td><td>" + rs.getString("email") + "</td><td>" + rs.getString("org") + "</td><td>" + rs.getString("orgnature") + "</td><td>" + rs.getString("username") + "</td><td>" + rs.getString("purpose") + "</td><td>" + rs.getString("apdt").split(" ")[0] + "</td><td>" + rs.getString("variety") + "</td><td>" + rs.getString("genus") + "</td><td>" + rs.getString("species") + "</td><td>" + rs.getString("subtaxa") + "</td><td>" + rs.getString("crop") + "</td><td>" + rs.getString("createddate").split(" ")[0] + "</td></tr>"); }
+	}
+	
+	if(u.equals("1")) {rs = statement.executeQuery("select a.*, b.genus, b.species, c.orderno, c.firstname, c.email, c.org, c.orgnature, c.createddate apdt,c.shipnum, c.cropshipnum, c.job,c.dept, c.purpose, c.username from grsusds.ordsummary a, passport b, orders c where  a.variety=b.vino and	 a.orderid=c.orderid and a.type='GA' and year(a.createddate) = '"+yr+"' order by a.type,a.tocountry,a.createddate");
+	while(rs.next()){if(x==0) sb.append("<table id='rtab'  style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th>Sent From</th><th>Order No</th><th>Ship No.</th><th>Crop Ship No.</th><th>Recipient Name</th><th>Title</th><th>Department</th><th>Email</th><th>Organization</th><th>Org Nature</th><th>Sender</th><th>Purpoae</th><th>Apply Date</th><th>Variety</th><th>Genus</th><th>Species</th><th>Date</th></tr></thead><tbody>"); x++; sb.append("<tr><td>" + rs.getString("tocountry") + "</td><td>" + rs.getString("fromcountry")+ "</td><td>" + rs.getString("orderno") + "</td><td>" + rs.getString("shipnum") + "</td><td>" + rs.getString("cropshipnum") + "</td><td>" + rs.getString("firstname") + "</td><td>" + rs.getString("job") + "</td><td>" + rs.getString("dept") + "</td><td>" + rs.getString("email") + "</td><td>" + rs.getString("org") + "</td><td>" + rs.getString("orgnature") + "</td><td>" + rs.getString("username") + "</td><td>" + rs.getString("purpose") + "</td><td>" + rs.getString("apdt").split(" ")[0] + "</td><td>" + rs.getString("variety") + "</td><td>" + rs.getString("genus") + "</td><td>" + rs.getString("species") + "</td><td>" + rs.getString("createddate").split(" ")[0] + "</td></tr>"); }
+	}
+	
+	if(u.equals("2")) {rs = statement.executeQuery("select a.tocountry, count(a.tocountry) tot from grsusds.ordsummary a where a.type='BL' and year(a.createddate) = '"+yr+"' group by a.tocountry order by a.tocountry");
+	while(rs.next()){if(x==0) sb.append("<table id='rtab' size='30%' align='center' style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th># Varieties Sent</th><th>Year</th></tr></thead><tbody>"); x++; sb.append("<tr><td>" + rs.getString("tocountry") + "</td><td>" + rs.getString("tot")+ "</td><td>" + yr + "</td></tr>"); }
+	}
+	
+	if(u.equals("3")) {rs = statement.executeQuery("select a.tocountry, count(a.tocountry) tot from grsusds.ordsummary a where a.type='GA' and year(a.createddate) = '"+yr+"' group by a.tocountry order by a.tocountry");
+	while(rs.next()){if(x==0) sb.append("<table id='rtab'  style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th># Varieties Sent</th><th>Year</th></tr></thead><tbod y>"); x++; sb.append("<tr><td>" + rs.getString("tocountry") + "</td><td>" + rs.getString("tot")+ "</td><td>" + yr + "</td></tr>"); }
+	}
+
+	if(u.equals("4")) {rs = statement.executeQuery("select a.fromcountry, count(a.fromcountry) tot from grsusds.ordsummary a where a.type='BL' and year(a.createddate) = '"+yr+"' group by a.fromcountry order by a.fromcountry");
+	while(rs.next()){if(x==0) sb.append("<table id='rtab' size='30%' align='center' style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th># Varieties Sent</th><th>Year</th></tr></thead><tbody>"); x++; sb.append("<tr><td>" + rs.getString("fromcountry") + "</td><td>" + rs.getString("tot")+ "</td><td>" + yr + "</td></tr>"); }
+	}
+	
+	if(u.equals("5")) {rs = statement.executeQuery("select a.fromcountry, count(a.fromcountry) tot from grsusds.ordsummary a where a.type='GA' and year(a.createddate) = '"+yr+"' group by a.fromcountry order by a.fromcountry");
+	while(rs.next()){if(x==0) sb.append("<table id='rtab'  style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th># Varieties Sent</th><th>Year</th></tr></thead><tbod y>"); x++; sb.append("<tr><td>" + rs.getString("fromcountry") + "</td><td>" + rs.getString("tot")+ "</td><td>" + yr + "</td></tr>"); }
+	}
+	
+		    if(u.equals("6")) { 
+        ResultSet rs2 = null;Statement statement2 = null;    statement2 = connection.createStatement(); 
+ 
+        rs = statement.executeQuery("select c.* from orders c where year(c.processeddt) = '"+yr+"' "); 
+    while(rs.next()){ 
+        rs2 = statement2.executeQuery("SELECT b.crop,b.genus, b.species, b.subtaxa, b.crop ,a.fromcountry,a.tocountry,COUNT(b.crop) nx FROM ordsummary a,seedcatalogpre b WHERE a.orderid = " + rs.getString("orderid") + " AND substring(a.variety,1,4) = b.code GROUP BY a.fromcountry , b.crop"); 
+        while(rs2.next()){if(x==0) sb.append("<table id='rtab'  style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th>Sent From</th><th>Order No</th><th>Ship No.</th><th> Crop Ship No.</th><th>Sender</th><th>Recipient Name</th><th>Title</th><th>Department</th><th>Email</th><th>Organization</th><th>Process Date</th><th>Genus</th><th>Species</th><th>Subtaxa</th><th>Crop</th><th># Lines    </th></tr></thead><tbody>"); x++; sb.append("<tr><td>" + rs2.getString("tocountry") + "</td><td>" + rs2.getString("fromcountry")+ "</td><td>" + rs.getString("orderno") + "</td><td>" + rs.getString("shipnum") + "</td><td>" + rs.getString("cropshipnum") + "</td><td>" + rs.getString("username") + "</td><td>" + rs.getString("firstname") + "</td><td>" + rs.getString("job") + "</td><td>" + rs.getString("dept") + "</td><td>" + rs.getString("email") + "</td><td>" + rs.getString("org") + "</td><td>" + rs.getString("processeddt").split(" ")[0] + "</td><td>" + rs2.getString("genus") + "</td><td>" + rs2.getString("species") + "</td><td>" + rs2.getString("subtaxa") + "</td><td>" + rs2.getString("crop") + "</td><td>" + rs2.getString("nx") + "</td></tr>"); } 
+        } 
+    }
+	
+	if(u.equals("7")) {
+		ResultSet rs2 = null;Statement statement2 = null;	statement2 = connection.createStatement();
+
+		rs = statement.executeQuery("select c.* from orders c where year(c.processeddt) = '"+yr+"' ");
+	while(rs.next()){
+		rs2 = statement2.executeQuery("SELECT b.genus,b.species,a.fromcountry,a.tocountry,COUNT(b.genus) nx FROM ordsummary a,passport b WHERE a.orderid = " + rs.getString("orderid") + " AND a.variety = b.vino GROUP BY a.fromcountry , b.genus");
+		while(rs2.next()){if(x==0) sb.append("<table id='rtab'  style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th>Sent From</th><th>Order No</th><th>Ship No.</th><th> Crop Ship No.</th><th>Sender</th><th>Recipient Name</th><th>Title</th><th>Department</th><th>Email</th><th>Organization</th><th>Process Date</th><th>Genus</th><th>Species</th><th># Acc	</th></tr></thead><tbody>"); x++; sb.append("<tr><td>" + rs2.getString("tocountry") + "</td><td>" + rs2.getString("fromcountry")+ "</td><td>" + rs.getString("orderno") + "</td><td>" + rs.getString("shipnum") + "</td><td>" + rs.getString("cropshipnum") + "</td><td>" + rs.getString("username") + "</td><td>" + rs.getString("firstname") + "</td><td>" + rs.getString("job") + "</td><td>" + rs.getString("dept") + "</td><td>" + rs.getString("email") + "</td><td>" + rs.getString("org") + "</td><td>" + rs.getString("processeddt").split(" ")[0] + "</td><td>" + rs2.getString("genus") + "</td><td>" + rs2.getString("species") + "</td><td>" + rs2.getString("nx") + "</td></tr>"); }
+		}
+	}
+	
+	if(u.equals("8")) {
+		rs = statement.executeQuery("select orderid, userid, username, orderno, requestdate, email, firstname, lastname, job, dept, org, orgnature, phone, address, city, state, zip, country, imppermreq, breedlinesreq, breedlinessent, germplasmreq, germplasmsent, mtafile, smtafile, pid, shipmode, paymode, payprocess, paytest, payship, paymethod, paytotal, estimatedamt, isprocessed, processeddt, isenabled, createddate, iscanceled, cancelreason, canceldate, origincountry, originaddress, awb, mname, mjob, morg, mphone, maddress, mcity, mstate, mzip, mcountry, memail, shipnum, cropshipnum from orders where year(processeddt) = '"+yr+"' ");
+		while(rs.next()){if(x==0) sb.append("<table id='rtab'  style='display:non' class='tablesorter'><thead><tr><th>Sent To</th><th>Order No</th><th>Ship No.</th><th>Crop Ship No.</th><th>Sender</th><th>Recipient Name</th><th>Email</th><th>Title</th><th>Department</th><th>Organization</th><th>Org Nature</th><th>Process Date</th><th>Ship Mode</th><th>Pay Mode</th><th>Process Fee</th><th>Test Fee</th><th>Pay Method Fee</th><th>Shipping Fee</th><th>Total Fee</th></tr></thead><tbody>"); x++; sb.append("<tr><td>" + rs.getString("country") + "</td><td>" + rs.getString("orderno")+ "</td><td>" + rs.getString("shipnum") + "</td><td>" + rs.getString("cropshipnum") + "</td><td>" + rs.getString("username") + "</td><td>" + rs.getString("firstname") + "</td><td>" + rs.getString("email") + "</td><td>" + rs.getString("job") + "</td><td>" + rs.getString("dept") + "</td><td>" + rs.getString("org") + "</td><td>" + rs.getString("orgnature") + "</td><td>" + rs.getString("processeddt").split(" ")[0] + "</td><td>" + rs.getString("shipmode") + "</td><td>" + rs.getString("paymode") + "</td><td>" + rs.getString("payprocess") + "</td><td>" + rs.getString("paytest") + "</td><td>" + rs.getString("paymethod") + "</td><td>" + rs.getString("payship") + "</td><td>" + rs.getString("paytotal") + "</td></tr>"); }
+		}
+	
+if(x==0){sb.append("Nothing to show.");} else {sb.append("</tbody></table>");}
+	
+}
+catch (Exception e)
+{ 
+   sb.append("An error has occurred:" + e.getMessage());
+}
+finally
+{
+//	rs.close();
+	statement.close();
+	connection.close();
+	connection=null; statement=null; rs=null;
+	 
+}
+//response.setContentType("application/html; charset=UTF-8");
+out.println("<br>"+ x + " result(s) found<br>" + sb);
+%> 

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<%String u=((String)session.getAttribute( "s_userid")!=null&&!((String)session.getAttribute( "s_userid")).equals("null")?(String)session.getAttribute( "s_userid"):(request.getParameter("u")!=null&&request.getParameter("u")!=""?"vb"+request.getParameter("u"):"0"));%>
+<html>
+<head>
+<title>GRSU: Reports</title>
+<script language="javascript" src="./js/jquery-1.8.3.min.js"></script> 
+<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+<script type="text/javascript" src="js/jquery.tablesorter.widgets.min.js"></script>
+<link rel="stylesheet" type="text/css" href="style/styles.css" />
+<link rel="stylesheet" type="text/css" href="omstable.theme.blue.css" />
+
+<script type="text/javascript">
+$(document).ready(function () {
+	
+			if($("#sesu").val()=="0"){ $("#header").hide(); alert("You cannot access this page unless you are logged in.");return}
+
+	$(document).ajaxSend(function() {
+    $("#spinner").show();
+}).ajaxStop(function() {
+    $("#spinner").hide();
+}).ajaxError(function() {
+    $("#spinner").hide();
+});
+
+  //$('#rtab1').tablesorter({widthFixed: true, widgets: ['zebr a']});
+	/*$.ajax({
+		type: "POST",
+		data: un,
+		url:"omsgetfl.jsp",
+		success:function(result){
+			var f="";
+			$.each(result.fi, function(i,n){
+				if(n.flagshipid=="0" || n.flagshipid=="-1") {return false;}
+				if(f!=n.flagship){
+				$("#flaginnlist")
+					.append($('<option>', { value : n.flagshipid})
+				.text(n.flagship)); 
+				}
+			});
+			
+  		}
+	})*/
+});
+var un = {u:99}; 
+function ra()
+{
+		if($("#syr").val()=='') {$("#wgxls").hide();$("#d").html('');$("#dm").hide();$("#flaginnlist").hide();return;}
+		//	if(x==4) {$("#wgxls").hide();$("#d").html('');$("#dm").hide();$("#flaginnlist").show();return;} else $("#flaginnlist").hide();
+	un.u=$("#onch").val(); un.yr=$("#syr").val();
+	$.ajax({
+		type: "POST",
+		data: un,
+		url:"reportdata.jsp" 	,
+		success:function(result){
+			$("#d").html(result);
+			$(function(){
+			  $("#rtab").tablesorter({theme:'blue'	, widthFixed: true, widgets: ['zebra','stickyHeaders','filter'], widgetOptions:{stickyHeaders : 'tablesorter-stickyHeader'}}); $("#rtab").show(); $("#wgxls").show(); $("#dm").show();
+			});				
+  		}
+	});
+}
+
+function ra2(x)
+{
+		if(x=='') {$("#wgxls").hide();$("#d").html('');$("#dm").hide();return;}
+	un.f=x;
+	$.ajax({
+		type: "POST",
+		data: un,
+		url:"omsrptget2.jsp" 	,
+		success:function(result){
+			$("#d").html(result);
+			$(function(){
+			  $("#rtab").tablesorter({theme:'blue'	, widthFixed: true, widgets: ['zebra','stickyHeaders','filter'], widgetOptions:{stickyHeaders : 'tablesorter-stickyHeader'}}); $("#rtab").show(); $("#wgxls").show(); $("#dm").show();
+			});				
+  		}
+	});
+}
+
+
+function wvgetx(){$("#wgh").val($("#d").html());document.w1.submit();}	
+</script>
+</head>
+<body>
+<%@ include file="header.jsp" %>
+	<input type="hidden" id="sesu" name="sesu" value="<%=u%>">
+
+<div id="spinner" class="spinner" style="display:none;">
+    <img id="img-spinner" src="spinner.gif" alt="Loading"/>
+</div>
+<%
+String ys = "<select id='syr'>";
+for(int h=2018;h<=(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR));h++)
+{
+	ys+="<option value='" +h + "'>"+ h + "</option>";
+} ys+="</select>";%>
+<div id="header" style="width:90%;margin: 0 auto;"><br/>
+             <font color="#6aa84f" style="font-size:2em">GRSU/SDS</font><font color="#e69138" style="font-size:2em"> Reports</font>  &#x22ee;<%=ys%>&#x22ee;
+			 <select id="onch"><option value=''/>--------Select report--------</option><option value='0'/>Annual breeding lines sent - Detailed</option><option value='1'/>Annual germplasm accessions sent - Detailed</option><option value='2'/>Annual breeding lines sent to country - Summary</option><option value='3'/>Annual germplasm accessions sent to country - Summary</option><option value='4'/>Annual breeding lines sent by WorldVeg location - Summary</option><option value='5'/>Annual germplasm accessions sent by WorldVeg location - Summary</option><option value='6'/>Number of breeding lines sent to country - Detailed</option><option value='7'/>Number of germplasm accessions sent to country - Detailed</option> <option value='8'/>Payment Details</option></select>  <select name="flid" id="flaginnlist" onchange="ra2(this.value)" style="display:none">
+		 		<option value="">Flagship</option>
+			</select> <input type='button' class="btnCloseSpecial4" value='Go' id="wgxls" style="display:no" onclick='ra()'>
+				
+			 <span class='alignright'><input type='button' class="btnCloseSpecial4" value='Export to XLS' id="wgxls" style="display:non" onclick='wvgetx()'><form name="w1" action="toxls.jsp" target="ifrm1" method="POST"><input type="hidden" name="wgh" id="wgh"></form></span>     
+			<!--span class="alignright"><a href="javascrip t:window.close();void(0);" class="btnCloseSpecial4">Close</a></span-->
+        </div><hr style=" border: 0px solid #fff"/>
+<div style="width:90%;margin: 0 auto; background-color:#cef6d5; border:.4px solid #0c8b22; padding:5px; display:none;" id="dm">Use the text fields below the headings to filter the report. Begin by typing a few characters. You can add multiple filters to the report.</div>
+<div style="width:90%;margin: 0 auto;" id="d"></div>
+<form name="f" id="f"><input type="hidden" id="u" name="u" value="2"></form><iframe width=0 height=0 name='ifrm1' id='ifrm1'></iframe>
+
+</body>
+</html>

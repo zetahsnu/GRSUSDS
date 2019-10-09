@@ -1,0 +1,41 @@
+<%@ page import="java.sql.*, java.lang.*" %> 
+<%@ page trimDirectiveWhitespaces="true" %>
+<%
+String u=(request.getParameter("u")!=null&&request.getParameter("u")!=""?request.getParameter("u"):""); //userid
+
+String connectionURL = "jdbc:mysql://127.0.0.1:3306/grsusds?user=root;password=root";
+
+Connection connection = null;
+Statement statement = null;
+ResultSet rs = null;
+StringBuffer sb = new StringBuffer("");
+int x=0;
+Class.forName("com.mysql.jdbc.Driver");
+
+//u="3";
+//u="1";
+try
+{
+	connection = DriverManager.getConnection(connectionURL, "root", "root");
+	statement = connection.createStatement();
+	rs = statement.executeQuery("SELECT orderid,userid,username,orderno, DATE_FORMAT(requestdate,'%Y-%m-%d') requestdate,email,firstname,lastname,job,org,orgnature,phone,address,city,state,zip,country,imppermreq,breedlinesreq,breedlinessent,germplasmreq,germplasmsent,mtafile,smtafile,pid,shipmode,paymode,payprocess,paytest,payship,paytotal,estimatedamt,isprocessed,isenabled,DATE_FORMAT(createddate,'%Y-%m-%d') createddate,iscanceled,cancelreason,canceldate FROM grsusds.orders where (userid="+u+" or userid=0) and isenabled=1"); 
+	
+	while(rs.next()){if(x==0) sb.append("<table id='rtab' class='tablesorter' style='display:non'><thead><tr><th>Order No	</th><th>Date of Order</th><th>Date of Process</th><th>Organization</th><th>Country</th><th>Organization type</th></tr></thead><tbody>"); x++; sb.append("<tr><td><a href='javascript:fa("+ rs.getString("orderid") +");void(0)'>" + rs.getString("orderno") + "</a>"  + "</td><td>" + rs.getString("requestdate") + "</td><td>" + rs.getString("createddate") + "</td><td>" + rs.getString("org") + "</td><td>" + rs.getString("country") + "</td><td>" + rs.getString("orgnature") + "</td></tr>"); } 
+	if(x==0){sb.append("");} else {sb.append("</tbody></table>");} //+ (rs.getString("isprocessed").equals("1")?"<br/>Generate <a href='#'>Label</a> | <a href='#'>Invoice</a>":"")
+	
+}
+catch (Exception e)
+{ 
+   sb.append("An error has occurred:" + e.getMessage());
+}
+finally
+{
+	rs.close();
+	statement.close();
+	connection.close();
+	connection=null; statement=null; rs=null;
+	
+}
+//response.setContentType("application/html; charset=UTF-8");
+out.println(sb);
+%> 

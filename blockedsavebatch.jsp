@@ -1,0 +1,55 @@
+<%@ page import="java.sql.*,  java.io.*,java.util.*, javax.servlet.*" %>
+
+<%
+String connectionURL = "jdbc:mysql://127.0.0.1:3306/grsusds?user=root;password=a6v6g1r6isyyc";
+
+Connection connection = null;
+Statement stmt = null;
+ResultSet rs = null;
+PreparedStatement pstmt = null;
+ 
+int isok = 1;
+String ma="", successstr="Saved successfully.";
+   	
+String action = (request.getParameter("action")!=null&&request.getParameter("action")!=""?request.getParameter("action"):"1"); 
+String u=(request.getParameter("u")!=null&&request.getParameter("u")!=""?request.getParameter("u"):""); 
+String t=(request.getParameter("t")!=null&&request.getParameter("t")!=""?request.getParameter("t"):""); 
+if(t.equals("b"))t="";
+Class.forName("com.mysql.jdbc.Driver");
+
+try
+{
+	connection = DriverManager.getConnection(connectionURL, "root", "a6v6g1r6isyyc");
+	
+	if(action.equals("1"))
+	{
+	pstmt = connection.prepareStatement("INSERT INTO grsusds.blocked" + t + " (variety, crop, contract, untildate) VALUES (?,?,?,?)");
+		for(int i=0; i<u.split("#r#").length; i++) { if(!u.split("#r#")[i].equals("")) {out.print(i); pstmt.setString(1,u.split("#r#")[i].split("#c#")[0]); pstmt.setString(2,u.split("#r#")[i].split("#c#")[1]);pstmt.setString(3,u.split("#r#")[i].split("#c#")[2]);pstmt.setString(4,u.split("#r#")[i].split("#c#")[3]);  pstmt.addBatch();}}pstmt.executeBatch();
+		
+	}
+	if(action.equals("2"))
+	{
+	pstmt = connection.prepareStatement("delete from grsusds.blocked" + t + " where contract=?");
+	pstmt.setString(1, u);
+	pstmt.executeUpdate();
+	}
+}
+catch (Exception e)
+{ 
+	isok=0;
+   successstr= "An error has occured:" + e.getMessage();
+}
+finally
+{
+	if(rs!=null) rs.close();
+	if(stmt!=null)stmt.close();
+	if(pstmt!=null)pstmt.close();
+	connection.close();
+	connection=null; pstmt=null;stmt=null; rs=null;
+	
+}
+
+
+if(isok==0)out.print(successstr);
+else response.sendRedirect("blocked.jsp" + (!t.equals("b")?"?t=1":""));
+%>
